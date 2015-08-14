@@ -108,8 +108,8 @@ Person MainWindow::getPersonInfo(QString path)
     }
     while(i < n)
     {
-        qDebug() << "xx : " + vec[i][0];
-        if(vec[i][0].indexOf("\"问题") == 0)
+       // qDebug() << "xx : " + vec[i][0];
+        if(vec[i][0].indexOf("问题、风险\n/总结分享") == 0)
         {
             break;
         }
@@ -118,21 +118,16 @@ Person MainWindow::getPersonInfo(QString path)
         i++;
     }
     /* 底栏的问题 */
-    if(i < n && vec[i][0].indexOf("xx") == 0)
+    if(i < n && vec[i][0].indexOf("问题、风险\n/总结分享") == 0)
+    {
+        while(i < n)
         {
-        return person;
+            if(vec[i][1].isEmpty())
+                break;
+            person.share.push_back(vec[i][1]);
+            i++;
         }
-
-//    qDebug() << "lastWeek";
-//    for(auto p:person.lastWeek)
-//    {
-//        qDebug() << p.first << p.second;
-//    }
-//    qDebug() << "thisWeek";
-//    for(auto p:person.thisWeek)
-//    {
-//        qDebug() << p.first << p.second;
-//    }
+    }
 
     return person;
 }
@@ -267,13 +262,31 @@ void MainWindow::writeToHtml()
         QString this_week = "";
         QString share = "";
         for(auto s : person.lastWeek)
+        {
             last_week += s.first + "</br>";
+            if(!s.second.trimmed().isEmpty())
+                share += s.second + "</br>";
+        }
+        QString feed_back = "";
         for(auto s : person.thisWeek)
+        {
             this_week += s.first + "</br>";
+            if(!s.second.trimmed().isEmpty())
+                feed_back += s.second + "</br>";
+        }
+        if(!feed_back.trimmed().isEmpty() && !share.trimmed().isEmpty())
+            share = share +  "---------------------------------------" + "</br>" + feed_back;
+        feed_back = "";
         for(auto s : person.share)
-            share += s + "</br>";
+        {
+            if(!s.trimmed().isEmpty())
+               feed_back += s + "</br>";
+        }
+        if(!feed_back.trimmed().isEmpty() && !share.trimmed().isEmpty())
+            share = share +  "---------------------------------------" + "</br>" + feed_back;
+
         body += "\t<tr>\n";
-        body += "\t\t<td>" + (index == 0 ? g.name : " ") + "</td>\n";
+        body += "\t\t<td>" + (index == 0 ? (g.name + "( " + QString::number(g.members.count()) + "人" +  " )") : " ") + "</td>\n";
         body += "\t\t<td>" + person.name + "</td>\n";
         body += "\t\t<td>" + last_week + "</td>\n";
         body += "\t\t<td>" + this_week + "</td>\n";
