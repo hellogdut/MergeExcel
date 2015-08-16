@@ -14,9 +14,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    person.cpp
+    person.cpp \
+    customedit.cpp
 
 HEADERS  += mainwindow.h \
-    person.h
+    person.h \
+    customedit.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    res.qrc

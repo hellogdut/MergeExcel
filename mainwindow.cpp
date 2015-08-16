@@ -7,19 +7,47 @@
 #include <QPair>
 #include <QDir>
 #include <QFileInfo>
+#include <QDateTime>
+#include <QProcess>
+#include <QDesktopServices>
+#include <algorithm>
+#include <QMessageBox>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //QString path = "file:///Users/milu/Desktop/欢乐前台开发组周报_aaronwang_20150801.txt ";
-    //QString path = "C:\\Users\\milu\\Desktop\\周报\\20150803(大周会)\\斗地主\\2.txt";
-    //getPersonInfo(path);
+    tempFolder = QDir(QDir::current().filePath("xxx_temp"));
+
 }
 
 MainWindow::~MainWindow()
 {
+    QFileInfo html_file(html_path);
+    if(html_file.exists())
+        QFile::remove(html_path);
     delete ui;
+}
+
+void MainWindow::runVbsFinished()
+{
+    EnumExcel(tempFolder.path());
+    writeToHtml();
+    tempFolder = QDir(QDir::current().filePath("xxx_temp"));
+    html_path = QDir::current().filePath("1.html");
+    QFile file(html_path);
+    if (!file.open(QIODevice::ReadWrite))
+        ;
+    QTextStream out(&file);
+    out << result;
+    file.close();
+    QDesktopServices::openUrl(QUrl(html_path));
+    if(tempFolder.exists())
+        tempFolder.removeRecursively();
+    qDebug() << result;
+    ui->pushButton_3->setEnabled(true);
+
+
 }
 
 Person MainWindow::getPersonInfo(QString path)
@@ -170,29 +198,22 @@ void MainWindow::EnumExcel(QString path)
 
 void MainWindow::on_pushButton_clicked()
 {
-    QString path = ui->textEdit->toPlainText();
-    EnumExcel(path);
-    writeToHtml();
-//    qDebug() << "person Count:" << Group::allMemberNames.count();
-//    for(auto g : groups)
-//    {
-//        qDebug() << g.name;
-//        for(auto person:g.members)
-//        {
+    QDateTime time = QDateTime::currentDateTime();// 获取系统现在的时间
+    QString day = time.toString("yyyyMMdd"); // 设置显示格式
+    QDir dir;
+    QDir today(QDir(dir.currentPath()).filePath(day));
+    QStringList names = {"3D麻将","斗地主","斗牛","公共"};
+    for(int i = 0;i < names.size();++i)
+    {
+        QDir folder(today.filePath(names[i]));
+        if(!folder.exists())
+        {
+            qDebug() << folder.path();
+            dir.mkpath(folder.path());
+        }
 
-//            qDebug() << person.name;
-//            qDebug() << "lastWeek";
-//            for(auto last : person.lastWeek)
-//            {
-//                qDebug() << last.first << last.second;
-//            }
-//            qDebug() << "thisWeek";
-//            for(auto tw:person.thisWeek)
-//            {
-//                qDebug() << tw.first << tw.second;
-//            }
-//        }
-//    }
+    }
+
 
 }
 //void MainWindow::writeToHtml()
@@ -247,7 +268,7 @@ void MainWindow::writeToHtml()
     QString css = "<!DOCTYPE html><html><head><title>Practical CSS3 tables with rounded corners - demo</title><style>body { margin: 40px auto;    font-family: 'trebuchet MS', 'Lucida sans', Arial;    font-size: 14px;    color: #444;}table {    *border-collapse: collapse;     border-spacing: 0;    width: 100%;    }.bordered {    border: solid #ccc 1px;    -moz-border-radius: 6px;    -webkit-border-radius: 6px;    border-radius: 6px;    -webkit-box-shadow: 0 1px 1px #ccc;     -moz-box-shadow: 0 1px 1px #ccc;     box-shadow: 0 1px 1px #ccc;         }.bordered tr:hover {    background: #fbf8e9;    -o-transition: all 0.1s ease-in-out;    -webkit-transition: all 0.1s ease-in-out;    -moz-transition: all 0.1s ease-in-out;    -ms-transition: all 0.1s ease-in-out;    transition: all 0.1s ease-in-out;     }        .bordered td, .bordered th {    max-width: 300px;border-left: 1px solid #ccc;    border-top: 1px solid #ccc;    padding: 10px;    text-align: left;    }.bordered th {    background-color: #dce9f9;    background-image: -webkit-gradient(linear, left top, left bottom, from(#ebf3fc), to(#dce9f9));    background-image: -webkit-linear-gradient(top, #ebf3fc, #dce9f9);    background-image:    -moz-linear-gradient(top, #ebf3fc, #dce9f9);    background-image:     -ms-linear-gradient(top, #ebf3fc, #dce9f9);    background-image:      -o-linear-gradient(top, #ebf3fc, #dce9f9);    background-image:         linear-gradient(top, #ebf3fc, #dce9f9);    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;     -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;      box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;            border-top: none;    text-shadow: 0 1px 0 rgba(255,255,255,.5); }.bordered td:first-child, .bordered th:first-child {    border-left: none;}.bordered th:first-child {    -moz-border-radius: 6px 0 0 0;    -webkit-border-radius: 6px 0 0 0;    border-radius: 6px 0 0 0;}.bordered th:last-child {    -moz-border-radius: 0 6px 0 0;    -webkit-border-radius: 0 6px 0 0;    border-radius: 0 6px 0 0;}.bordered th:only-child{    -moz-border-radius: 6px 6px 0 0;    -webkit-border-radius: 6px 6px 0 0;    border-radius: 6px 6px 0 0;}.bordered tr:last-child td:first-child {    -moz-border-radius: 0 0 0 6px;    -webkit-border-radius: 0 0 0 6px;    border-radius: 0 0 0 6px;}.bordered tr:last-child td:last-child {    -moz-border-radius: 0 0 6px 0;    -webkit-border-radius: 0 0 6px 0;    border-radius: 0 0 6px 0;}.zebra td, .zebra th {    padding: 10px;    border-bottom: 1px solid #f2f2f2;    }.zebra tbody tr:nth-child(even) {    background: #f5f5f5;    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;     -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;      box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;        }.zebra th {    text-align: left;    text-shadow: 0 1px 0 rgba(255,255,255,.5);     border-bottom: 1px solid #ccc;    background-color: #eee;    background-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#eee));    background-image: -webkit-linear-gradient(top, #f5f5f5, #eee);    background-image:    -moz-linear-gradient(top, #f5f5f5, #eee);    background-image:     -ms-linear-gradient(top, #f5f5f5, #eee);    background-image:      -o-linear-gradient(top, #f5f5f5, #eee);     background-image:         linear-gradient(top, #f5f5f5, #eee);}.zebra th:first-child {    -moz-border-radius: 6px 0 0 0;    -webkit-border-radius: 6px 0 0 0;    border-radius: 6px 0 0 0;  }.zebra th:last-child {    -moz-border-radius: 0 6px 0 0;    -webkit-border-radius: 0 6px 0 0;    border-radius: 0 6px 0 0;}.zebra th:only-child{    -moz-border-radius: 6px 6px 0 0;    -webkit-border-radius: 6px 6px 0 0;    border-radius: 6px 6px 0 0;}.zebra tfoot td {    border-bottom: 0;    border-top: 1px solid #fff;    background-color: #f1f1f1;  }.zebra tfoot td:first-child {    -moz-border-radius: 0 0 0 6px;    -webkit-border-radius: 0 0 0 6px;    border-radius: 0 0 0 6px;}.zebra tfoot td:last-child {    -moz-border-radius: 0 0 6px 0;    -webkit-border-radius: 0 0 6px 0;    border-radius: 0 0 6px 0;}.zebra tfoot td:only-child{    -moz-border-radius: 0 0 6px 6px;    -webkit-border-radius: 0 0 6px 6px    border-radius: 0 0 6px 6px}</style></head><body>";
     QString table_head = "<table class='bordered'><thead><tr>\
                 <th>项目组</th>\
-                <th>姓名</th>\
+                <th></th>\
                 <th>上周工作重点</th>\
                 <th>本周工作重点</th>\
                 <th>问题&风险</th>\</thead>\n";
@@ -296,5 +317,116 @@ void MainWindow::writeToHtml()
     }
     QString end = "\n</table><br><br></body></html>";
     QString html = css + table_head + body + end;
-    qDebug() << html;
+    //qDebug() << html;
+    //ui->textEdit->setPlainText(html);
+    result = html;
+}
+
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    if(tempFolder.exists())
+        tempFolder.removeRecursively();
+    tempFolder.mkpath(tempFolder.path());
+
+    QFile f1(tempFolder.filePath("1.vbs"));
+    if(!f1.open(QIODevice::WriteOnly))
+    {
+        qDebug() << "can't open " << tempFolder.filePath("1.vbs");
+        //return;
+    }
+    QFile f2(":/1.vbs");
+    if(!f2.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "can't open" << "qrc:/1.vbs";
+        return;
+    }
+    QTextStream in(&f2);
+    QTextStream out(&f1);
+    out << in.readAll();
+    f1.close();
+    f2.close();
+
+    QString path = ui->textEdit->toPlainText();
+    copyDirectoryFiles(path,tempFolder.path(),true);
+
+    QProcess* proc = new QProcess(this);
+    connect(proc,SIGNAL(aboutToClose()),SLOT(runVbsFinished()));
+    QStringList param;
+    QString vbs_path = tempFolder.filePath("1.vbs");
+    param  << "/c" << vbs_path << tempFolder.path();
+
+    //proc->setWorkingDirectory(tempFolder.path());
+    proc->start("cmd.exe",param);
+    proc->waitForFinished();
+   // proc->waitForFinished();
+    //ui->textEdit->setPlainText(QString::fromLocal8Bit(proc->readAllStandardOutput()));
+    runVbsFinished();
+}
+
+bool MainWindow::copyDirectoryFiles(const QString &fromDir, const QString &toDir, bool coverFileIfExist)
+{
+
+    QDir sourceDir(fromDir);
+    QDir targetDir(toDir);
+    if(fromDir.isEmpty() || !sourceDir.exists())
+        return false;
+    if(!targetDir.exists()){    /** 如果目标目录不存在，则进行创建 */
+        if(!targetDir.mkdir(targetDir.path()))
+        {
+            qDebug() << "mkdir " + targetDir.filePath(sourceDir.dirName()) + " failed";
+        }
+    }
+
+    QFileInfoList fileInfoList = sourceDir.entryInfoList();
+
+    foreach(QFileInfo fileInfo, fileInfoList)
+    {
+        if(fileInfo.fileName() == "." || fileInfo.fileName() == "..")
+            continue;
+
+        if(fileInfo.isDir())
+        {   /**< 当为目录时，递归的进行 copy */
+            qDebug() << fileInfo.filePath() << "-> " << targetDir.filePath(fileInfo.fileName());
+            copyDirectoryFiles(fileInfo.filePath(),targetDir.filePath(fileInfo.fileName()),coverFileIfExist);
+        }
+        else
+        {
+            // 同步文件
+            QFileInfo fileA(fileInfo.filePath());
+            QFileInfo fileB(targetDir.filePath(fileInfo.fileName()));
+            if(fileB.exists())
+                QFile::remove(fileB.filePath());
+            if(!QFile::copy(fileA.filePath(),fileB.filePath()))
+                qDebug() << "can't copy" << fileA.filePath() << " to " << fileB.filePath();
+        }
+    }
+    return true;
+}
+
+void MainWindow::on_textEdit_textChanged()
+{
+    QString url = ui->textEdit->toPlainText();
+    bool rst = QDir(url).exists() && !url.isEmpty();
+    ui->pushButton_2->setEnabled(rst);
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    QVector<QString> vec;
+    for(auto s : Group::allMemberNames)
+        vec.push_back(s);
+    std::sort(vec.begin(),vec.end());
+
+    QString str;
+    int j = 1;
+    for(int i = 0;i < vec.size();++i)
+    {
+        str += vec[i].leftJustified(12,' ') + "\t\t";
+        if(j % 3 == 0)
+            str += "\n";
+        j++;
+    }
+    QMessageBox::information(0, "值周表", str);
+
 }
